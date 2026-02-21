@@ -89,60 +89,21 @@ class SpecialAEPediaAdmin extends SpecialPage {
             }
         }
 
-        $token  = $this->getContext()->getCsrfTokenSet()->getToken()->toString();
-        $intro  = $this->msg( 'aepedia-allowlist-intro' )->parse();
-        $lFile    = $this->msg( 'aepedia-csv-file-label' )->escaped();
-        $lCol     = $this->msg( 'aepedia-csv-columns-label' )->escaped();
-        $lHint    = $this->msg( 'aepedia-csv-columns-hint' )->escaped();
-        $lFilter  = $this->msg( 'aepedia-csv-filter-label' )->escaped();
-        $lFHint   = $this->msg( 'aepedia-csv-filter-hint' )->escaped();
-        $lFAdd    = $this->msg( 'aepedia-csv-filter-add' )->escaped();
-        $submit   = $this->msg( 'aepedia-allowlist-submit' )->escaped();
-
         $out->addHTML( '<h2>' . $this->msg( 'aepedia-tab-allowlist' )->escaped() . '</h2>' );
-        $out->addHTML( "
-            <p>{$intro}</p>
-            <form id=\"aepedia-form-allowlist\" class=\"aepedia-form\" method=\"post\">
-                <input type=\"hidden\" name=\"tab\" value=\"allowlist\">
-                <input type=\"hidden\" name=\"action\" value=\"import-allowlist\">
-                <input type=\"hidden\" name=\"wpEditToken\" value=\"" . htmlspecialchars( $token ) . "\">
-                <textarea name=\"emails\"></textarea>
-                <p>
-                    <label><strong>{$lFile}</strong></label><br>
-                    <input type=\"file\" name=\"csv_file\" accept=\".csv,.txt\">
-                </p>
-                <div class=\"aepedia-csv-options\">
-                    <p>
-                        <label><strong>{$lCol}</strong></label><br>
-                        <small>{$lHint}</small><br>
-                        <select name=\"csv_cols\" class=\"aepedia-col-select\" multiple>
-                            <option value=\"0\" selected>" . $this->msg( 'aepedia-csv-column-numbered', 1 )->escaped() . "</option>
-                        </select>
-                    </p>
-                    <div class=\"aepedia-filters\">
-                        <label><strong>{$lFilter}</strong></label><br>
-                        <small>{$lFHint}</small><br>
-                        <div class=\"aepedia-filter-list\"></div>
-                        <button type=\"button\" class=\"mw-ui-button aepedia-filter-add\">{$lFAdd}</button>
-                    </div>
-                    <button type=\"submit\" class=\"mw-ui-button mw-ui-progressive\">
-                        {$submit}
-                    </button>
-                </div>
-            </form>
-        " );
+        $this->renderCsvForm(
+            'allowlist',
+            'import-allowlist',
+            $this->msg( 'aepedia-allowlist-intro' )->parse(),
+            $this->msg( 'aepedia-allowlist-submit' )->escaped(),
+        );
 
         $rows  = $this->allowlistManager->getAllowlistEmails();
         $count = count( $rows );
-        $title = $this->msg( 'aepedia-allowlist-current', $count )->escaped();
-        $col   = $this->msg( 'aepedia-allowlist-col-email' )->escaped();
-
-        $out->addHTML( "<h3>{$title}</h3>" );
-        $out->addHTML( "<table class=\"wikitable sortable aepedia-table\"><thead><tr><th>{$col}</th></tr></thead><tbody>" );
-        foreach ( $rows as $email ) {
-            $out->addHTML( '<tr><td>' . htmlspecialchars( $email ) . '</td></tr>' );
-        }
-        $out->addHTML( '</tbody></table>' );
+        $this->renderEmailTable(
+            $this->msg( 'aepedia-allowlist-current', $count )->escaped(),
+            $this->msg( 'aepedia-allowlist-col-email' )->escaped(),
+            $rows,
+        );
     }
 
     // -------------------------------------------------------------------------
@@ -174,45 +135,92 @@ class SpecialAEPediaAdmin extends SpecialPage {
             }
         }
 
-        $token        = $this->getContext()->getCsrfTokenSet()->getToken()->toString();
-        $intro        = $this->msg( 'aepedia-groups-intro' )->parse();
         $lGroup       = $this->msg( 'aepedia-groups-label-group' )->escaped();
-        $lFile        = $this->msg( 'aepedia-csv-file-label' )->escaped();
-        $lCol         = $this->msg( 'aepedia-csv-columns-label' )->escaped();
-        $lHint        = $this->msg( 'aepedia-csv-columns-hint' )->escaped();
-        $lFilter      = $this->msg( 'aepedia-csv-filter-label' )->escaped();
-        $lFHint       = $this->msg( 'aepedia-csv-filter-hint' )->escaped();
-        $lFAdd        = $this->msg( 'aepedia-csv-filter-add' )->escaped();
-        $submit       = $this->msg( 'aepedia-groups-submit' )->escaped();
-
         $groupOptions = '';
         foreach ( GroupManager::MANAGED_GROUPS as $g ) {
             $groupOptions .= '<option value="' . htmlspecialchars( $g ) . '">'
                 . htmlspecialchars( $g ) . '</option>';
         }
+        $extraFields = "
+            <p>
+                <label><strong>{$lGroup}</strong></label><br>
+                <select name=\"group\">{$groupOptions}</select>
+            </p>";
 
         $out->addHTML( '<h2>' . $this->msg( 'aepedia-tab-groups' )->escaped() . '</h2>' );
+        $this->renderCsvForm(
+            'groups',
+            'import-group',
+            $this->msg( 'aepedia-groups-intro' )->parse(),
+            $this->msg( 'aepedia-groups-submit' )->escaped(),
+            $extraFields,
+        );
+
+        $colEmail = $this->msg( 'aepedia-groups-col-email' )->escaped();
+        foreach ( GroupManager::MANAGED_GROUPS as $group ) {
+            $members = $this->groupManager->getGroupMembers( $group );
+            $count   = count( $members );
+            $title   = $this->msg( 'aepedia-groups-members-title', $group, $count )->escaped();
+
+            if ( $count === 0 ) {
+                $out->addHTML( "<h3>{$title}</h3>" );
+                $out->addHTML( '<p><em>' . $this->msg( 'aepedia-groups-no-members' )->escaped() . '</em></p>' );
+                continue;
+            }
+            $this->renderEmailTable( $title, $colEmail, $members );
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // HELPERS
+    // -------------------------------------------------------------------------
+
+    /**
+     * Render a CSV import form with file input, column selector, filters, and submit.
+     *
+     * @param string $tab          Tab key (used as form ID suffix and hidden field)
+     * @param string $action       Hidden action value
+     * @param string $intro        Intro HTML paragraph
+     * @param string $submitLabel  Submit button label
+     * @param string $extraFields  Extra HTML inserted before the file input
+     */
+    private function renderCsvForm(
+        string $tab,
+        string $action,
+        string $intro,
+        string $submitLabel,
+        string $extraFields = '',
+    ): void {
+        $out    = $this->getOutput();
+        $token  = htmlspecialchars(
+            $this->getContext()->getCsrfTokenSet()->getToken()->toString()
+        );
+        $lFile   = $this->msg( 'aepedia-csv-file-label' )->escaped();
+        $lCol    = $this->msg( 'aepedia-csv-columns-label' )->escaped();
+        $lHint   = $this->msg( 'aepedia-csv-columns-hint' )->escaped();
+        $lFilter = $this->msg( 'aepedia-csv-filter-label' )->escaped();
+        $lFHint  = $this->msg( 'aepedia-csv-filter-hint' )->escaped();
+        $lFAdd   = $this->msg( 'aepedia-csv-filter-add' )->escaped();
+        $col1    = $this->msg( 'aepedia-csv-column-numbered', 1 )->escaped();
+
         $out->addHTML( "
             <p>{$intro}</p>
-            <form id=\"aepedia-form-groups\" class=\"aepedia-form\" method=\"post\">
-                <input type=\"hidden\" name=\"tab\" value=\"groups\">
-                <input type=\"hidden\" name=\"action\" value=\"import-group\">
-                <input type=\"hidden\" name=\"wpEditToken\" value=\"" . htmlspecialchars( $token ) . "\">
+            <form id=\"aepedia-form-{$tab}\" class=\"aepedia-form\" method=\"post\">
+                <input type=\"hidden\" name=\"tab\" value=\"{$tab}\">
+                <input type=\"hidden\" name=\"action\" value=\"{$action}\">
+                <input type=\"hidden\" name=\"wpEditToken\" value=\"{$token}\">
                 <textarea name=\"emails\"></textarea>
-                <p>
-                    <label><strong>{$lGroup}</strong></label>
-                    <select name=\"group\">{$groupOptions}</select>
-                </p>
                 <p>
                     <label><strong>{$lFile}</strong></label><br>
                     <input type=\"file\" name=\"csv_file\" accept=\".csv,.txt\">
                 </p>
                 <div class=\"aepedia-csv-options\">
+                    {$extraFields}
                     <p>
                         <label><strong>{$lCol}</strong></label><br>
                         <small>{$lHint}</small><br>
                         <select name=\"csv_cols\" class=\"aepedia-col-select\" multiple>
-                            <option value=\"0\" selected>" . $this->msg( 'aepedia-csv-column-numbered', 1 )->escaped() . "</option>
+                            <option value=\"0\" selected>{$col1}</option>
                         </select>
                     </p>
                     <div class=\"aepedia-filters\">
@@ -222,34 +230,29 @@ class SpecialAEPediaAdmin extends SpecialPage {
                         <button type=\"button\" class=\"mw-ui-button aepedia-filter-add\">{$lFAdd}</button>
                     </div>
                     <button type=\"submit\" class=\"mw-ui-button mw-ui-progressive\">
-                        {$submit}
+                        {$submitLabel}
                     </button>
                 </div>
             </form>
         " );
-
-        $colEmail = $this->msg( 'aepedia-groups-col-email' )->escaped();
-        foreach ( GroupManager::MANAGED_GROUPS as $group ) {
-            $members = $this->groupManager->getGroupMembers( $group );
-            $count   = count( $members );
-            $title   = $this->msg( 'aepedia-groups-members-title', $group, $count )->escaped();
-
-            $out->addHTML( "<h3>{$title}</h3>" );
-            if ( $count === 0 ) {
-                $out->addHTML( '<p><em>' . $this->msg( 'aepedia-groups-no-members' )->escaped() . '</em></p>' );
-                continue;
-            }
-            $out->addHTML( "<table class=\"wikitable sortable aepedia-table\"><thead><tr><th>{$colEmail}</th></tr></thead><tbody>" );
-            foreach ( $members as $email ) {
-                $out->addHTML( '<tr><td>' . htmlspecialchars( $email ) . '</td></tr>' );
-            }
-            $out->addHTML( '</tbody></table>' );
-        }
     }
 
-    // -------------------------------------------------------------------------
-    // HELPERS
-    // -------------------------------------------------------------------------
+    /**
+     * Render an email list as a sortable table.
+     *
+     * @param string   $title   Section heading (already escaped)
+     * @param string   $colName Column header label (already escaped)
+     * @param string[] $emails  List of email addresses
+     */
+    private function renderEmailTable( string $title, string $colName, array $emails ): void {
+        $out = $this->getOutput();
+        $out->addHTML( "<h3>{$title}</h3>" );
+        $out->addHTML( "<table class=\"wikitable sortable aepedia-table\"><thead><tr><th>{$colName}</th></tr></thead><tbody>" );
+        foreach ( $emails as $email ) {
+            $out->addHTML( '<tr><td>' . htmlspecialchars( $email ) . '</td></tr>' );
+        }
+        $out->addHTML( '</tbody></table>' );
+    }
 
     /**
      * Parse the newline-separated email list submitted by the JS client.

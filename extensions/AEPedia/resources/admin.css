@@ -32,7 +32,13 @@
 }
 
 .aepedia-form button[type="submit"] {
-  margin-top: 0.5em;
+  margin-top: 1em;
+}
+
+.aepedia-form>p,
+.aepedia-csv-options>p,
+.aepedia-csv-options>.aepedia-filters {
+  margin-bottom: 1em;
 }
 
 /* Tables */
