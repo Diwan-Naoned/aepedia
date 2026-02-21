@@ -34,5 +34,6 @@
   "aepedia-csv-filter-label": "Filtres d’exclusion :",
   "aepedia-csv-filter-hint": "Les lignes correspondant à un filtre seront exclues de l’import.",
   "aepedia-csv-filter-add": "Ajouter un filtre",
-  "aepedia-csv-filter-value-placeholder": "Valeur à exclure"
+  "aepedia-csv-filter-value-placeholder": "Valeur à exclure",
+  "aepedia-csv-download": "Télécharger CSV"
 }

@@ -35,6 +35,7 @@ mw.hook("wikipage.content").add(() => {
     mw.config.get("aepedia.confirmAllowlist"),
   );
   registerForm("aepedia-form-groups", mw.config.get("aepedia.confirmGroups"));
+  registerDownloadButtons();
 });
 
 /**
@@ -378,4 +379,34 @@ const collectFilters = (container) => {
     filters.push({ colIndex: parseInt(select.value, 10), value });
   }
   return filters;
+};
+
+// -------------------------------------------------------------------------
+// CSV download
+// -------------------------------------------------------------------------
+
+/**
+ * Wire up all .aepedia-csv-download buttons to export the adjacent table.
+ */
+const registerDownloadButtons = () => {
+  for (const link of document.querySelectorAll(".aepedia-csv-download")) {
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+      const table = link.closest("h3")?.nextElementSibling;
+      if (!table) return;
+
+      const rows = Array.from(table.querySelectorAll("tbody tr"), (tr) =>
+        tr.cells[0]?.textContent.trim(),
+      ).filter(Boolean);
+
+      const csv = "email\n" + rows.join("\n") + "\n";
+      const blob = new Blob([csv], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = (link.dataset.filename || "emails") + ".csv";
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+  }
 };

@@ -103,6 +103,7 @@ class SpecialAEPediaAdmin extends SpecialPage {
             $this->msg( 'aepedia-allowlist-current', $count )->escaped(),
             $this->msg( 'aepedia-allowlist-col-email' )->escaped(),
             $rows,
+            'allowlist',
         );
     }
 
@@ -167,7 +168,7 @@ class SpecialAEPediaAdmin extends SpecialPage {
                 $out->addHTML( '<p><em>' . $this->msg( 'aepedia-groups-no-members' )->escaped() . '</em></p>' );
                 continue;
             }
-            $this->renderEmailTable( $title, $colEmail, $members );
+            $this->renderEmailTable( $title, $colEmail, $members, $group );
         }
     }
 
@@ -238,15 +239,19 @@ class SpecialAEPediaAdmin extends SpecialPage {
     }
 
     /**
-     * Render an email list as a sortable table.
+     * Render an email list as a sortable table with a CSV download button.
      *
-     * @param string   $title   Section heading (already escaped)
-     * @param string   $colName Column header label (already escaped)
-     * @param string[] $emails  List of email addresses
+     * @param string   $title    Section heading (already escaped)
+     * @param string   $colName  Column header label (already escaped)
+     * @param string[] $emails   List of email addresses
+     * @param string   $filename Download filename (without extension)
      */
-    private function renderEmailTable( string $title, string $colName, array $emails ): void {
+    private function renderEmailTable( string $title, string $colName, array $emails, string $filename = 'emails' ): void {
         $out = $this->getOutput();
-        $out->addHTML( "<h3>{$title}</h3>" );
+        $dlLabel = $this->msg( 'aepedia-csv-download' )->escaped();
+        $out->addHTML( "
+            <h3>{$title} <a href=\"#\" class=\"aepedia-csv-download\"
+                data-filename=\"" . htmlspecialchars( $filename ) . "\">{$dlLabel}</a></h3>" );
         $out->addHTML( "<table class=\"wikitable sortable aepedia-table\"><thead><tr><th>{$colName}</th></tr></thead><tbody>" );
         foreach ( $emails as $email ) {
             $out->addHTML( '<tr><td>' . htmlspecialchars( $email ) . '</td></tr>' );

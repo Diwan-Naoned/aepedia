@@ -35,5 +35,6 @@
   "aepedia-csv-filter-label": "Siloù dilemel :",
   "aepedia-csv-filter-hint": "Al linennoù a genglot gant ur sil a vo dilamet eus an enporzhiadur.",
   "aepedia-csv-filter-add": "Ouzhpennañ ur sil",
-  "aepedia-csv-filter-value-placeholder": "Talvoud da zilemel"
+  "aepedia-csv-filter-value-placeholder": "Talvoud da zilemel",
+  "aepedia-csv-download": "Pellgargañ CSV"
 }
