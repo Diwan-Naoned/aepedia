@@ -23,6 +23,9 @@
       "scripts": [
         "resources/column-selector.js"
       ],
+      "styles": [
+        "resources/admin.css"
+      ],
       "dependencies": [
         "mediawiki.base"
       ]

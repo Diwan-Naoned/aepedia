@@ -34,13 +34,11 @@ class SpecialAEPediaAdmin extends SpecialPage {
             'allowlist' => $this->msg( 'aepedia-tab-allowlist' )->text(),
             'groups'    => $this->msg( 'aepedia-tab-groups' )->text(),
         ];
-        $tabHtml = '<div class="mw-tabs" style="margin-bottom:1em;">';
+        $tabHtml = '<div class="aepedia-tabs">';
         foreach ( $tabs as $key => $label ) {
             $url   = $this->getPageTitle()->getLocalURL( [ 'tab' => $key ] );
-            $style = $key === $tab
-                ? 'font-weight:bold;border-bottom:2px solid #3366cc;padding-bottom:4px;'
-                : '';
-            $tabHtml .= "<a href=\"{$url}\" style=\"margin-right:1.5em;{$style}\">"
+            $class = $key === $tab ? ' class="active"' : '';
+            $tabHtml .= "<a href=\"{$url}\"{$class}>"
                 . htmlspecialchars( $label ) . "</a>";
         }
         $tabHtml .= '</div>';
@@ -52,9 +50,6 @@ class SpecialAEPediaAdmin extends SpecialPage {
             'aepedia.noEmailsError'          => $this->msg( 'aepedia-allowlist-error-empty' )->plain(),
             'aepedia.confirmAllowlist'       => $this->msg( 'aepedia-allowlist-confirm' )->plain(),
             'aepedia.confirmGroups'          => $this->msg( 'aepedia-groups-confirm' )->plain(),
-            'aepedia.filterLabel'            => $this->msg( 'aepedia-csv-filter-label' )->plain(),
-            'aepedia.filterHint'             => $this->msg( 'aepedia-csv-filter-hint' )->plain(),
-            'aepedia.filterAdd'              => $this->msg( 'aepedia-csv-filter-add' )->plain(),
             'aepedia.filterValuePlaceholder' => $this->msg( 'aepedia-csv-filter-value-placeholder' )->plain(),
         ] );
 
@@ -96,34 +91,44 @@ class SpecialAEPediaAdmin extends SpecialPage {
 
         $token  = $this->getContext()->getCsrfTokenSet()->getToken()->toString();
         $intro  = $this->msg( 'aepedia-allowlist-intro' )->parse();
-        $lFile  = $this->msg( 'aepedia-csv-file-label' )->escaped();
-        $lCol   = $this->msg( 'aepedia-csv-columns-label' )->escaped();
-        $lHint  = $this->msg( 'aepedia-csv-columns-hint' )->escaped();
-        $submit = $this->msg( 'aepedia-allowlist-submit' )->escaped();
+        $lFile    = $this->msg( 'aepedia-csv-file-label' )->escaped();
+        $lCol     = $this->msg( 'aepedia-csv-columns-label' )->escaped();
+        $lHint    = $this->msg( 'aepedia-csv-columns-hint' )->escaped();
+        $lFilter  = $this->msg( 'aepedia-csv-filter-label' )->escaped();
+        $lFHint   = $this->msg( 'aepedia-csv-filter-hint' )->escaped();
+        $lFAdd    = $this->msg( 'aepedia-csv-filter-add' )->escaped();
+        $submit   = $this->msg( 'aepedia-allowlist-submit' )->escaped();
 
         $out->addHTML( '<h2>' . $this->msg( 'aepedia-tab-allowlist' )->escaped() . '</h2>' );
         $out->addHTML( "
             <p>{$intro}</p>
-            <form id=\"aepedia-form-allowlist\" method=\"post\">
+            <form id=\"aepedia-form-allowlist\" class=\"aepedia-form\" method=\"post\">
                 <input type=\"hidden\" name=\"tab\" value=\"allowlist\">
                 <input type=\"hidden\" name=\"action\" value=\"import-allowlist\">
                 <input type=\"hidden\" name=\"wpEditToken\" value=\"" . htmlspecialchars( $token ) . "\">
-                <textarea name=\"emails\" style=\"display:none;\"></textarea>
+                <textarea name=\"emails\"></textarea>
                 <p>
                     <label><strong>{$lFile}</strong></label><br>
                     <input type=\"file\" name=\"csv_file\" accept=\".csv,.txt\">
                 </p>
-                <p>
-                    <label><strong>{$lCol}</strong></label><br>
-                    <small>{$lHint}</small><br>
-                    <select name=\"csv_cols\" class=\"aepedia-col-select\" multiple style=\"min-width:250px;margin-top:0.3em;\">
-                        <option value=\"0\" selected>" . $this->msg( 'aepedia-csv-column-numbered', 1 )->escaped() . "</option>
-                    </select>
-                </p>
-                <div class=\"aepedia-filters\"></div>
-                <button type=\"submit\" class=\"mw-ui-button mw-ui-progressive\" style=\"margin-top:0.5em;\">
-                    {$submit}
-                </button>
+                <div class=\"aepedia-csv-options\">
+                    <p>
+                        <label><strong>{$lCol}</strong></label><br>
+                        <small>{$lHint}</small><br>
+                        <select name=\"csv_cols\" class=\"aepedia-col-select\" multiple>
+                            <option value=\"0\" selected>" . $this->msg( 'aepedia-csv-column-numbered', 1 )->escaped() . "</option>
+                        </select>
+                    </p>
+                    <div class=\"aepedia-filters\">
+                        <label><strong>{$lFilter}</strong></label><br>
+                        <small>{$lFHint}</small><br>
+                        <div class=\"aepedia-filter-list\"></div>
+                        <button type=\"button\" class=\"mw-ui-button aepedia-filter-add\">{$lFAdd}</button>
+                    </div>
+                    <button type=\"submit\" class=\"mw-ui-button mw-ui-progressive\">
+                        {$submit}
+                    </button>
+                </div>
             </form>
         " );
 
@@ -133,7 +138,7 @@ class SpecialAEPediaAdmin extends SpecialPage {
         $col   = $this->msg( 'aepedia-allowlist-col-email' )->escaped();
 
         $out->addHTML( "<h3>{$title}</h3>" );
-        $out->addHTML( "<table class=\"wikitable sortable\" style=\"width:100%\"><thead><tr><th>{$col}</th></tr></thead><tbody>" );
+        $out->addHTML( "<table class=\"wikitable sortable aepedia-table\"><thead><tr><th>{$col}</th></tr></thead><tbody>" );
         foreach ( $rows as $email ) {
             $out->addHTML( '<tr><td>' . htmlspecialchars( $email ) . '</td></tr>' );
         }
@@ -175,6 +180,9 @@ class SpecialAEPediaAdmin extends SpecialPage {
         $lFile        = $this->msg( 'aepedia-csv-file-label' )->escaped();
         $lCol         = $this->msg( 'aepedia-csv-columns-label' )->escaped();
         $lHint        = $this->msg( 'aepedia-csv-columns-hint' )->escaped();
+        $lFilter      = $this->msg( 'aepedia-csv-filter-label' )->escaped();
+        $lFHint       = $this->msg( 'aepedia-csv-filter-hint' )->escaped();
+        $lFAdd        = $this->msg( 'aepedia-csv-filter-add' )->escaped();
         $submit       = $this->msg( 'aepedia-groups-submit' )->escaped();
 
         $groupOptions = '';
@@ -186,11 +194,11 @@ class SpecialAEPediaAdmin extends SpecialPage {
         $out->addHTML( '<h2>' . $this->msg( 'aepedia-tab-groups' )->escaped() . '</h2>' );
         $out->addHTML( "
             <p>{$intro}</p>
-            <form id=\"aepedia-form-groups\" method=\"post\">
+            <form id=\"aepedia-form-groups\" class=\"aepedia-form\" method=\"post\">
                 <input type=\"hidden\" name=\"tab\" value=\"groups\">
                 <input type=\"hidden\" name=\"action\" value=\"import-group\">
                 <input type=\"hidden\" name=\"wpEditToken\" value=\"" . htmlspecialchars( $token ) . "\">
-                <textarea name=\"emails\" style=\"display:none;\"></textarea>
+                <textarea name=\"emails\"></textarea>
                 <p>
                     <label><strong>{$lGroup}</strong></label>
                     <select name=\"group\">{$groupOptions}</select>
@@ -199,17 +207,24 @@ class SpecialAEPediaAdmin extends SpecialPage {
                     <label><strong>{$lFile}</strong></label><br>
                     <input type=\"file\" name=\"csv_file\" accept=\".csv,.txt\">
                 </p>
-                <p>
-                    <label><strong>{$lCol}</strong></label><br>
-                    <small>{$lHint}</small><br>
-                    <select name=\"csv_cols\" class=\"aepedia-col-select\" multiple style=\"min-width:250px;margin-top:0.3em;\">
-                        <option value=\"0\" selected>" . $this->msg( 'aepedia-csv-column-numbered', 1 )->escaped() . "</option>
-                    </select>
-                </p>
-                <div class=\"aepedia-filters\"></div>
-                <button type=\"submit\" class=\"mw-ui-button mw-ui-progressive\" style=\"margin-top:0.5em;\">
-                    {$submit}
-                </button>
+                <div class=\"aepedia-csv-options\">
+                    <p>
+                        <label><strong>{$lCol}</strong></label><br>
+                        <small>{$lHint}</small><br>
+                        <select name=\"csv_cols\" class=\"aepedia-col-select\" multiple>
+                            <option value=\"0\" selected>" . $this->msg( 'aepedia-csv-column-numbered', 1 )->escaped() . "</option>
+                        </select>
+                    </p>
+                    <div class=\"aepedia-filters\">
+                        <label><strong>{$lFilter}</strong></label><br>
+                        <small>{$lFHint}</small><br>
+                        <div class=\"aepedia-filter-list\"></div>
+                        <button type=\"button\" class=\"mw-ui-button aepedia-filter-add\">{$lFAdd}</button>
+                    </div>
+                    <button type=\"submit\" class=\"mw-ui-button mw-ui-progressive\">
+                        {$submit}
+                    </button>
+                </div>
             </form>
         " );
 
@@ -224,7 +239,7 @@ class SpecialAEPediaAdmin extends SpecialPage {
                 $out->addHTML( '<p><em>' . $this->msg( 'aepedia-groups-no-members' )->escaped() . '</em></p>' );
                 continue;
             }
-            $out->addHTML( "<table class=\"wikitable sortable\" style=\"width:100%\"><thead><tr><th>{$colEmail}</th></tr></thead><tbody>" );
+            $out->addHTML( "<table class=\"wikitable sortable aepedia-table\"><thead><tr><th>{$colEmail}</th></tr></thead><tbody>" );
             foreach ( $members as $email ) {
                 $out->addHTML( '<tr><td>' . htmlspecialchars( $email ) . '</td></tr>' );
             }
@@ -261,11 +276,11 @@ class SpecialAEPediaAdmin extends SpecialPage {
     }
 
     private function successBox( string $msg ): string {
-        return '<div class="successbox" style="margin-bottom:1em;">' . $msg . '</div>';
+        return '<div class="successbox aepedia-flash">' . $msg . '</div>';
     }
 
     private function errorBox( string $msg ): string {
-        return '<div class="errorbox" style="margin-bottom:1em;">' . $msg . '</div>';
+        return '<div class="errorbox aepedia-flash">' . $msg . '</div>';
     }
 
     protected function getGroupName(): string {

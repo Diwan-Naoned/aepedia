@@ -21,6 +21,8 @@ const COLUMN_NUMBERED_LABEL =
   mw.config.get("aepedia.columnNumberedLabel") ?? "Column $1";
 const NO_EMAILS_ERROR =
   mw.config.get("aepedia.noEmailsError") ?? "No valid emails found.";
+const FILTER_VALUE_PLACEHOLDER =
+  mw.config.get("aepedia.filterValuePlaceholder") ?? "Value to exclude";
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // -------------------------------------------------------------------------
@@ -49,17 +51,39 @@ const registerForm = (formId, confirmMsg) => {
   const fileInput = form.elements["csv_file"];
   const colSelect = form.elements["csv_cols"];
   const emailsField = form.elements["emails"];
-  if (!fileInput || !colSelect || !emailsField) return;
+  const csvOptions = form.querySelector(".aepedia-csv-options");
+  const filterList = form.querySelector(".aepedia-filter-list");
+  const filterAddBtn = form.querySelector(".aepedia-filter-add");
+  if (!fileInput || !colSelect || !emailsField || !csvOptions) return;
+
+  /** Current column labels, kept in sync with headers. */
+  let currentCols = null;
+
+  filterAddBtn?.addEventListener("click", () => {
+    if (currentCols) appendFilterRow(filterList, currentCols);
+  });
 
   fileInput.addEventListener("change", async () => {
     const file = fileInput.files?.[0];
     if (!file) {
       resetSelect(colSelect);
+      clearFilters(filterList);
+      currentCols = null;
+      csvOptions.classList.remove("visible");
       return;
     }
     const text = await readFile(file);
     const headers = findHeaders(text);
-    headers ? populateSelect(colSelect, headers) : resetSelect(colSelect);
+    if (headers) {
+      populateSelect(colSelect, headers);
+      currentCols = headers;
+      updateFilterSelects(filterList, headers);
+    } else {
+      resetSelect(colSelect);
+      clearFilters(filterList);
+      currentCols = null;
+    }
+    csvOptions.classList.add("visible");
   });
 
   form.addEventListener("submit", (e) => {
@@ -76,9 +100,15 @@ const registerForm = (formId, confirmMsg) => {
       parseInt(value, 10),
     );
 
+    const filters = collectFilters(filterList);
+
     (async () => {
       const text = await readFile(file);
-      const emails = extractEmails(text, colIndexes.length ? colIndexes : [0]);
+      const emails = extractEmails(
+        text,
+        colIndexes.length ? colIndexes : [0],
+        filters,
+      );
 
       if (emails.length === 0) {
         showClientError(form, NO_EMAILS_ERROR);
@@ -159,7 +189,7 @@ const populateSelect = (select, cols) => {
     opt.textContent = label;
     opt.selected =
       prevSelected.has(String(idx)) || (prevSelected.size === 0 && idx === 0);
-    select.appendChild(opt);
+    select.append(opt);
   }
 
   if (select.selectedOptions.length === 0 && select.options.length > 0) {
@@ -183,7 +213,7 @@ const resetSelect = (select) => {
  * @param  {number[]}  colIndexes  0-based column indexes to try, in order
  * @return {string[]}
  */
-const extractEmails = (text, colIndexes) => {
+const extractEmails = (text, colIndexes, filters = []) => {
   const emails = [];
   const seen = new Set();
   let isFirstLine = true;
@@ -198,6 +228,16 @@ const extractEmails = (text, colIndexes) => {
     if (isFirstLine) {
       isFirstLine = false;
       if (cols.every((c) => !EMAIL_RE.test(c.trim()))) continue;
+    }
+
+    // Apply exclusion filters — skip row if any filter matches
+    if (
+      filters.length > 0 &&
+      filters.some(
+        (f) => cols[f.colIndex]?.trim().toLowerCase() === f.value.toLowerCase(),
+      )
+    ) {
+      continue;
     }
 
     for (const idx of colIndexes) {
@@ -256,8 +296,86 @@ const parseCsvLine = (line) => {
 const showClientError = (form, message) => {
   form.querySelector(".aepedia-client-error")?.remove();
   const err = document.createElement("p");
-  err.className = "aepedia-client-error error";
-  err.style.color = "red";
+  err.className = "aepedia-client-error";
   err.textContent = message;
   form.querySelector("button[type=submit]").before(err);
+};
+
+// -------------------------------------------------------------------------
+// Filter UI helpers
+// -------------------------------------------------------------------------
+
+/**
+ * Update all existing filter-row column selects when headers change.
+ *
+ * @param {HTMLElement} list  The .aepedia-filter-list element
+ * @param {string[]}   cols  Current CSV column labels
+ */
+const updateFilterSelects = (list, cols) => {
+  if (!list) return;
+  for (const select of list.querySelectorAll(".aepedia-filter-col")) {
+    populateSelect(select, cols);
+  }
+};
+
+/**
+ * Append a single filter row (column select + value input + remove button).
+ *
+ * @param {HTMLElement} list  The .aepedia-filter-list element
+ * @param {string[]}   cols  Current column labels
+ */
+const appendFilterRow = (list, cols) => {
+  const row = document.createElement("div");
+  row.className = "aepedia-filter-row";
+
+  const select = document.createElement("select");
+  select.className = "aepedia-filter-col";
+  populateSelect(select, cols);
+  select.selectedIndex = 0;
+
+  const input = document.createElement("input");
+  input.type = "text";
+  input.className = "aepedia-filter-value";
+  input.placeholder = FILTER_VALUE_PLACEHOLDER;
+
+  const removeBtn = document.createElement("button");
+  removeBtn.type = "button";
+  removeBtn.className = "aepedia-filter-remove";
+  removeBtn.textContent = "\u00d7";
+  removeBtn.addEventListener("click", () => row.remove());
+
+  row.append(select, input, removeBtn);
+  list.append(row);
+};
+
+/**
+ * Remove all filter rows.
+ *
+ * @param {HTMLElement} list  The .aepedia-filter-list element
+ */
+const clearFilters = (list) => {
+  if (list) list.innerHTML = "";
+};
+
+/**
+ * Collect active filters from the UI.
+ *
+ * @param  {HTMLElement} container
+ * @return {Array<{colIndex: number, value: string}>}
+ */
+const collectFilters = (container) => {
+  if (!container) {
+    return [];
+  }
+
+  const filters = [];
+  for (const row of container.querySelectorAll(".aepedia-filter-row")) {
+    const select = row.querySelector(".aepedia-filter-col");
+    const input = row.querySelector(".aepedia-filter-value");
+    if (!select || !input) continue;
+    const value = input.value.trim();
+    if (value === "") continue;
+    filters.push({ colIndex: parseInt(select.value, 10), value });
+  }
+  return filters;
 };

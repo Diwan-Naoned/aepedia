@@ -1,0 +1,79 @@
+/* Tabs */
+.aepedia-tabs {
+  margin-bottom: 1em;
+}
+
+.aepedia-tabs a {
+  margin-right: 1.5em;
+}
+
+.aepedia-tabs a.active {
+  font-weight: bold;
+  border-bottom: 2px solid #3366cc;
+  padding-bottom: 4px;
+}
+
+/* Forms */
+.aepedia-form textarea[name="emails"] {
+  display: none;
+}
+
+.aepedia-csv-options {
+  display: none;
+}
+
+.aepedia-csv-options.visible {
+  display: block;
+}
+
+.aepedia-col-select {
+  min-width: 250px;
+  margin-top: 0.3em;
+}
+
+.aepedia-form button[type="submit"] {
+  margin-top: 0.5em;
+}
+
+/* Tables */
+.aepedia-table {
+  width: 100%;
+}
+
+/* Flash messages */
+.aepedia-flash {
+  margin-bottom: 1em;
+}
+
+/* Client-side error */
+.aepedia-client-error {
+  color: red;
+}
+
+/* Exclusion filters */
+.aepedia-filter-row {
+  display: flex;
+  gap: 0.4em;
+  align-items: center;
+  margin-top: 0.3em;
+}
+
+.aepedia-filter-add {
+  margin-top: 0.3em;
+}
+
+.aepedia-filter-remove {
+  border: none;
+  background: none;
+  font-size: 1.3em;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0.1em 0.4em;
+  color: #888;
+  border-radius: 3px;
+}
+
+.aepedia-filter-remove:hover {
+  background: #fee;
+  color: #c00;
+}
