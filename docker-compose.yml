@@ -1,0 +1,50 @@
+# Local dev only. Wiki at http://localhost:8080
+
+services:
+  mariadb:
+    image: mariadb:12
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: mediawiki
+      MYSQL_USER: wiki
+      MYSQL_PASSWORD: wiki
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  install:
+    # image: mediawiki:1.45
+    build: .
+    command: maintenance/run install --dbserver=mariadb --dbname=mediawiki --dbuser=wiki --dbpass=wiki --server=http://localhost:8080 --scriptpath= --pass=adminadmin Admin Admin
+    restart: no
+    volumes:
+      - ./extensions/AEPedia:/var/www/html/extensions/AEPedia
+    profiles:
+      - install
+    depends_on:
+      - mariadb
+
+  update:
+    build: .
+    command: maintenance/run update --quick
+    restart: no
+    volumes:
+      - ./extensions/AEPedia:/var/www/html/extensions/AEPedia
+      - ./config/LocalSettings.dev.php:/var/www/html/LocalSettings.php
+    profiles:
+      - update
+    depends_on:
+      - mariadb
+
+  mediawiki:
+    build: .
+    ports:
+      - "8080:80"
+    volumes:
+      - ./extensions/AEPedia:/var/www/html/extensions/AEPedia
+      - ./config/LocalSettings.dev.php:/var/www/html/LocalSettings.php
+    depends_on:
+      - mariadb

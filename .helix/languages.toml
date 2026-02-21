@@ -1,0 +1,4 @@
+[language-server.intelephense.config.intelephense]
+environment.includePaths = [
+  "extensions/AEPedia/.mediawiki-core"
+]

@@ -1,0 +1,67 @@
+{
+  "name": "AEPedia",
+  "version": "1.0.0",
+  "author": [
+    "Valentin Cocaud"
+  ],
+  "url": "https://github.com/EmrysMyrooin/aepedia",
+  "descriptionmsg": "Une extension dedier a la gestion des droits d'acces pour l'AEP Diwan Naoned",
+  "license-name": "MIT",
+  "type": "other",
+  "requires": {
+    "MediaWiki": ">= 1.45"
+  },
+  "AutoloadNamespaces": {
+    "MediaWiki\\Extension\\AEPedia\\": "src/"
+  },
+  "Hooks": {
+    "LocalUserCreated": "MediaWiki\\Extension\\AEPedia\\RegistrationHooks::onLocalUserCreated",
+    "LoadExtensionSchemaUpdates": "MediaWiki\\Extension\\AEPedia\\SchemaHooks::onLoadExtensionSchemaUpdates"
+  },
+  "ResourceModules": {
+    "ext.aepedia.admin": {
+      "scripts": [
+        "resources/column-selector.js"
+      ],
+      "dependencies": [
+        "mediawiki.base"
+      ]
+    }
+  },
+  "ResourceFileModulePaths": {
+    "localBasePath": "",
+    "remoteExtPath": "AEPedia"
+  },
+  "ServiceWiringFiles": [
+    "ServiceWiring.php"
+  ],
+  "SpecialPages": {
+    "AEPediaAdmin": {
+      "class": "MediaWiki\\Extension\\AEPedia\\SpecialAEPediaAdmin",
+      "services": [
+        "AEPedia.AllowlistManager",
+        "AEPedia.GroupManager"
+      ]
+    }
+  },
+  "AvailableRights": [
+    "aepedia-admin"
+  ],
+  "GroupPermissions": {
+    "*": {
+      "aepedia-admin": false
+    },
+    "sysop": {
+      "aepedia-admin": true
+    }
+  },
+  "MessagesDirs": {
+    "AEPedia": [
+      "i18n"
+    ]
+  },
+  "ExtensionMessagesFiles": {
+    "AEPediaAlias": "AEPedia.alias.php"
+  },
+  "manifest_version": 2
+}
