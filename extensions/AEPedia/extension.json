@@ -20,6 +20,11 @@
   },
   "ResourceModules": {
     "ext.aepedia.admin": {
+      "class": "MediaWiki\\ResourceLoader\\CodexModule",
+      "codexStyleOnly": true,
+      "codexComponents": [
+        "CdxButton"
+      ],
       "scripts": [
         "resources/column-selector.js"
       ],

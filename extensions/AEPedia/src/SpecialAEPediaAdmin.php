@@ -26,7 +26,6 @@ class SpecialAEPediaAdmin extends SpecialPage {
         $this->checkPermissions();
         $out = $this->getOutput();
         $out->setPageTitle( $this->msg( 'aepedia-admin-title' )->text() );
-        $out->addModuleStyles( 'mediawiki.special' );
 
         $tab = $this->getRequest()->getVal( 'tab', 'allowlist' );
 
@@ -228,9 +227,9 @@ class SpecialAEPediaAdmin extends SpecialPage {
                         <label><strong>{$lFilter}</strong></label><br>
                         <small>{$lFHint}</small><br>
                         <div class=\"aepedia-filter-list\"></div>
-                        <button type=\"button\" class=\"mw-ui-button aepedia-filter-add\">{$lFAdd}</button>
+                        <button type=\"button\" class=\"cdx-button aepedia-filter-add\">{$lFAdd}</button>
                     </div>
-                    <button type=\"submit\" class=\"mw-ui-button mw-ui-progressive\">
+                    <button type=\"submit\" class=\"cdx-button cdx-button--action-progressive cdx-button--weight-primary\">
                         {$submitLabel}
                     </button>
                 </div>
