@@ -26,6 +26,8 @@ $wgDevelopmentWarnings = true;
 
 # -- Language ------------------------------------------------------------------
 $wgLanguageCode = "fr";
+$wgULSLanguages = [ 'fr', 'br' ];
+$wgULSAnonCanChangeLanguage = true;
 
 # -- File uploads --------------------------------------------------------------
 $wgEnableUploads  = true;
@@ -37,7 +39,15 @@ wfLoadSkin('Vector');
 
 # -- Extensions ----------------------------------------------------------------
 wfLoadExtension( 'Lockdown' );
+wfLoadExtension( 'UniversalLanguageSelector' );
+wfLoadExtension( 'MassMessage' );
+wfLoadExtension( 'MassMessageEmail' );
+wfLoadExtension( 'Translate' );
+wfLoadExtension( 'TranslationNotifications' );
 wfLoadExtension( 'AEPedia' );
+
+# -- Translate -----------------------------------------------------------------
+$wgGroupPermissions['user']['pagetranslation'] = true;
 
 # -- Custom namespaces ---------------------------------------------------------
 # One namespace per group. Use even numbers >= 3000 for custom namespaces.
