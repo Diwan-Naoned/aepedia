@@ -11,11 +11,11 @@ RUN curl -fSL https://extdist.wmflabs.org/dist/extensions/Lockdown-REL1_45-a46db
     | tar -xz -C /var/www/html/extensions/
 
 # Install UniversalLanguageSelector
-RUN curl -fSL https://extdist.wmflabs.org/dist/extensions/UniversalLanguageSelector-REL1_45-b941709.tar.gz \
+RUN curl -fSL https://extdist.wmflabs.org/dist/extensions/UniversalLanguageSelector-REL1_45-77e7796.tar.gz \
     | tar -xz -C /var/www/html/extensions/
 
 # Install Translate
-RUN curl -fSL https://extdist.wmflabs.org/dist/extensions/Translate-REL1_45-71eca50.tar.gz \
+RUN curl -fSL https://extdist.wmflabs.org/dist/extensions/Translate-REL1_45-5ab21be.tar.gz \
     | tar -xz -C /var/www/html/extensions/
 
 # Install TranslationNotifications and its dependencies
