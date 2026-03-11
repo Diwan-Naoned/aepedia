@@ -16,7 +16,8 @@ use Wikimedia\Rdbms\IConnectionProvider;
  *
  * Called by:
  *   - SpecialAEPediaAdmin (on CSV import)
- *   - RegistrationHooks (on new account creation, to apply pre-existing assignments)
+ *   - UserHooks (on new account creation, to apply pre-existing assignments)
+ *   - UserHooks (on UserGroupsChanged, to keep aepedia_groups in sync with MW group assignments)
  */
 class GroupManager {
 
@@ -150,6 +151,46 @@ class GroupManager {
             if ( in_array( $group, self::MANAGED_GROUPS, true ) ) {
                 $this->userGroupManager->addUserToGroup( $user, $group );
             }
+        }
+    }
+
+    /**
+     * Sync aepedia_groups for a single user based on a group delta.
+     *
+     * Called from the UserGroupsChanged hook when a sysop edits group membership
+     * via Special:UserRights (or any other MW code path that uses UserGroupManager).
+     * Only groups in MANAGED_GROUPS are touched; all others are silently ignored.
+     *
+     * @param User     $user    The user whose groups changed.
+     * @param string[] $added   Groups that were added to the user.
+     * @param string[] $removed Groups that were removed from the user.
+     */
+    public function syncUserGroups( User $user, array $added, array $removed ): void {
+        $email = strtolower( trim( $user->getEmail() ) );
+        if ( $email === '' ) {
+            return;
+        }
+
+        $db = $this->dbProvider->getPrimaryDatabase();
+
+        $managedAdded   = array_values( array_intersect( $added,   self::MANAGED_GROUPS ) );
+        $managedRemoved = array_values( array_intersect( $removed, self::MANAGED_GROUPS ) );
+
+        if ( !empty( $managedAdded ) ) {
+            $db->newInsertQueryBuilder()
+                ->insertInto( 'aepedia_groups' )
+                ->rows( array_map( static fn( $g ) => [ 'ag_email' => $email, 'ag_group' => $g ], $managedAdded ) )
+                ->ignore()
+                ->caller( __METHOD__ )
+                ->execute();
+        }
+
+        if ( !empty( $managedRemoved ) ) {
+            $db->newDeleteQueryBuilder()
+                ->deleteFrom( 'aepedia_groups' )
+                ->where( [ 'ag_email' => $email, 'ag_group' => $managedRemoved ] )
+                ->caller( __METHOD__ )
+                ->execute();
         }
     }
 

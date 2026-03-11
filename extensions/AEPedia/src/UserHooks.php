@@ -5,7 +5,7 @@ namespace MediaWiki\Extension\AEPedia;
 use MediaWiki\MediaWikiServices;
 use MediaWiki\User\User;
 
-class RegistrationHooks {
+class UserHooks {
 
     /**
      * Fired right after a new local user account is created.
@@ -36,6 +36,31 @@ class RegistrationHooks {
         // Email is valid — apply any group assignments that were already in the DB
         // (e.g. admin imported the groups CSV before this user registered)
         $services->getService( 'AEPedia.GroupManager' )->applyGroupsToNewUser( $user );
+    }
+
+    /**
+     * Fired after a user's group memberships are changed (e.g. via Special:UserRights).
+     *
+     * Keeps aepedia_groups in sync with actual MW group assignments so that the DB
+     * table always reflects the current state. Only groups in GroupManager::MANAGED_GROUPS
+     * are touched; all others are silently ignored.
+     */
+    public static function onUserGroupsChanged(
+        User $user,
+        array $added,
+        array $removed,
+        $performer,
+        $reason,
+        $oldUGMs,
+        $newUGMs
+    ): void {
+        if ( strtolower( trim( $user->getEmail() ) ) === '' ) {
+            return;
+        }
+
+        MediaWikiServices::getInstance()
+            ->getService( 'AEPedia.GroupManager' )
+            ->syncUserGroups( $user, $added, $removed );
     }
 
     private static function blockUser( User $user, string $reason ): void {

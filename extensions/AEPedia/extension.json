@@ -15,7 +15,8 @@
     "MediaWiki\\Extension\\AEPedia\\": "src/"
   },
   "Hooks": {
-    "LocalUserCreated": "MediaWiki\\Extension\\AEPedia\\RegistrationHooks::onLocalUserCreated",
+    "LocalUserCreated": "MediaWiki\\Extension\\AEPedia\\UserHooks::onLocalUserCreated",
+    "UserGroupsChanged": "MediaWiki\\Extension\\AEPedia\\UserHooks::onUserGroupsChanged",
     "LoadExtensionSchemaUpdates": "MediaWiki\\Extension\\AEPedia\\SchemaHooks::onLoadExtensionSchemaUpdates"
   },
   "ResourceModules": {
