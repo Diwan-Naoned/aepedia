@@ -37,6 +37,25 @@ my-wiki/
 Pour Dokploy : utilisez la fonctionnalité **File Mounts** pour injecter le vrai `LocalSettings.php`
 dans le conteneur à l'emplacement `/var/www/html/LocalSettings.php`.
 
+## Variables d'environnement (production)
+
+`config/LocalSettings.prod.php` lit les secrets et la configuration depuis les variables d'environnement suivantes.
+À définir dans la section **Environment Variables** de Dokploy.
+
+| Variable                | Description                                                        |
+| ----------------------- | ------------------------------------------------------------------ |
+| `DOMAIN_NAME`           | Nom de domaine public (ex. `aepedia.exemple.fr`)                   |
+| `DB_SERVER`             | Hôte du serveur MySQL                                              |
+| `DB_NAME`               | Nom de la base de données                                          |
+| `DB_USER`               | Utilisateur de la base de données                                  |
+| `DB_PASSWORD`           | Mot de passe de la base de données                                 |
+| `SECRET_KEY`            | Clé secrète MediaWiki — générer avec `openssl rand -hex 32`        |
+| `UPGRADE_KEY`           | Clé de mise à jour MediaWiki — générer avec `openssl rand -hex 16` |
+| `AUTH_TOKEN_VERSION`    | Version du token d'authentification (défaut : `1`)                 |
+| `CONTACT_EMAIL`         | Adresse e-mail de contact (défaut : `aep.naoned@gmail.com`)        |
+| `SMTP_USERNAME`         | Identifiant d'authentification SMTP (Mailjet)                      |
+| `SMTP_PASSWORD`         | Mot de passe d'authentification SMTP (Mailjet)                     |
+
 ## Premier déploiement
 
 1. Copiez `config/LocalSettings.php.example` → `config/LocalSettings.php` et renseignez :

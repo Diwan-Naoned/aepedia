@@ -7,23 +7,23 @@ RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" &&
     php -r "unlink('composer-setup.php');"
 
 # Install Lockdown - update URL here to upgrade
-RUN curl -fSL https://extdist.wmflabs.org/dist/extensions/Lockdown-REL1_45-a46dbea.tar.gz \
+RUN curl -fSL https://extdist.wmflabs.org/dist/extensions/Lockdown-REL1_45-b29af0e.tar.gz \
     | tar -xz -C /var/www/html/extensions/
 
 # Install UniversalLanguageSelector
-RUN curl -fSL https://extdist.wmflabs.org/dist/extensions/UniversalLanguageSelector-REL1_45-77e7796.tar.gz \
+RUN curl -fSL https://extdist.wmflabs.org/dist/extensions/UniversalLanguageSelector-REL1_45-52177c5.tar.gz \
     | tar -xz -C /var/www/html/extensions/
 
 # Install Translate
-RUN curl -fSL https://extdist.wmflabs.org/dist/extensions/Translate-REL1_45-5ab21be.tar.gz \
+RUN curl -fSL https://extdist.wmflabs.org/dist/extensions/Translate-REL1_45-6186929.tar.gz \
     | tar -xz -C /var/www/html/extensions/
 
 # Install TranslationNotifications and its dependencies
-RUN curl -fSL https://extdist.wmflabs.org/dist/extensions/MassMessage-REL1_45-d720498.tar.gz \
+RUN curl -fSL https://extdist.wmflabs.org/dist/extensions/MassMessage-REL1_45-c581968.tar.gz \
     | tar -xz -C /var/www/html/extensions/
-RUN curl -fSL https://extdist.wmflabs.org/dist/extensions/MassMessageEmail-REL1_45-4b71f24.tar.gz \
+RUN curl -fSL https://extdist.wmflabs.org/dist/extensions/MassMessageEmail-REL1_45-9df7517.tar.gz \
     | tar -xz -C /var/www/html/extensions/
-RUN curl -fSL https://extdist.wmflabs.org/dist/extensions/TranslationNotifications-REL1_45-915db76.tar.gz \
+RUN curl -fSL https://extdist.wmflabs.org/dist/extensions/TranslationNotifications-REL1_45-28fd083.tar.gz \
     | tar -xz -C /var/www/html/extensions/
 
 RUN cat <<'EOF' > ./composer.local.json
@@ -44,3 +44,6 @@ RUN ./composer.phar install --no-dev --no-security-blocking
 
 # Copy your custom extension
 COPY extensions/AEPedia /var/www/html/extensions/AEPedia
+
+# Copy production settings
+COPY ./config/LocalSettings.prod.php /var/www/html/LocalSettings.php
