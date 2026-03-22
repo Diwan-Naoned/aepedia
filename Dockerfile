@@ -15,7 +15,7 @@ RUN curl -fSL https://extdist.wmflabs.org/dist/extensions/UniversalLanguageSelec
     | tar -xz -C /var/www/html/extensions/
 
 # Install Translate
-RUN curl -fSL https://extdist.wmflabs.org/dist/extensions/Translate-REL1_45-6186929.tar.gz \
+RUN curl -fSL https://extdist.wmflabs.org/dist/extensions/Translate-REL1_45-5d90b09.tar.gz \
     | tar -xz -C /var/www/html/extensions/
 
 # Install TranslationNotifications and its dependencies
@@ -23,7 +23,7 @@ RUN curl -fSL https://extdist.wmflabs.org/dist/extensions/MassMessage-REL1_45-c5
     | tar -xz -C /var/www/html/extensions/
 RUN curl -fSL https://extdist.wmflabs.org/dist/extensions/MassMessageEmail-REL1_45-9df7517.tar.gz \
     | tar -xz -C /var/www/html/extensions/
-RUN curl -fSL https://extdist.wmflabs.org/dist/extensions/TranslationNotifications-REL1_45-28fd083.tar.gz \
+RUN curl -fSL https://extdist.wmflabs.org/dist/extensions/TranslationNotifications-REL1_45-17889f7.tar.gz \
     | tar -xz -C /var/www/html/extensions/
 
 RUN cat <<'EOF' > ./composer.local.json

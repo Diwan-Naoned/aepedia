@@ -4,10 +4,10 @@ services:
   mariadb:
     image: mariadb:12
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: mediawiki
-      MYSQL_USER: wiki
-      MYSQL_PASSWORD: wiki
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
     healthcheck:
       test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       interval: 5s
@@ -16,10 +16,10 @@ services:
       start_period: 10s
 
   install:
-    # image: mediawiki:1.45
     build: .
-    command: maintenance/run install --dbserver=mariadb --dbname=mediawiki --dbuser=wiki --dbpass=wiki --server=http://localhost:8080 --scriptpath= --pass=adminadmin Admin Admin
+    command: maintenance/run install --dbserver=${DB_SERVER} --dbname=${DB_NAME} --dbuser=${DB_USER} --dbpass=${DB_PASSWORD} --server=http://${DOMAIN_NAME} --scriptpath= --pass=adminadmin Admin Admin
     restart: no
+    env_file: .env
     volumes:
       - ./extensions/AEPedia:/var/www/html/extensions/AEPedia
     profiles:
@@ -31,9 +31,10 @@ services:
     build: .
     command: maintenance/run update --quick
     restart: no
+    env_file: .env
     volumes:
       - ./extensions/AEPedia:/var/www/html/extensions/AEPedia
-      - ./config/LocalSettings.dev.php:/var/www/html/LocalSettings.php
+      - ./config/LocalSettings.prod.php:/var/www/html/LocalSettings.php
     profiles:
       - update
     depends_on:
@@ -43,8 +44,9 @@ services:
     build: .
     ports:
       - "8080:80"
+    env_file: .env
     volumes:
       - ./extensions/AEPedia:/var/www/html/extensions/AEPedia
-      - ./config/LocalSettings.dev.php:/var/www/html/LocalSettings.php
+      - ./config/LocalSettings.prod.php:/var/www/html/LocalSettings.php
     depends_on:
       - mariadb

@@ -1,4 +1,8 @@
 <?php
+if ( getenv( 'DEBUG_MODE' ) ) {
+	error_reporting( -1 );
+	ini_set( 'display_errors', 1 );
+}
 # Further documentation for configuration settings may be found at:
 # https://www.mediawiki.org/wiki/Manual:Configuration_settings
 
@@ -22,7 +26,8 @@ $wgScriptPath = "";
 
 ## The protocol and server name to use in fully-qualified URLs
 $domain = getenv( 'DOMAIN_NAME' );
-$wgServer = "https://$domain";
+$protocol = getenv( 'PROTOCOL' ) ?: 'https';
+$wgServer = "$protocol://$domain";
 
 ## The URL path to static resources (images, scripts, etc.)
 $wgResourceBasePath = $wgScriptPath;
@@ -163,14 +168,11 @@ wfLoadExtension( 'WikiEditor' );
 # Add more configuration options below.
 
 # -- Debug --------------------------------------------------------------------
-# Uncomment to ease the development.
-#$wgShowExceptionDetails = true;
-#$wgDebugToolbar = true;
-#$wgDevelopmentWarnings = true;
-#
-# Also add those 2 lines at the very begining of this file
-# error_reporting( -1 );
-# ini_set( 'display_errors', 1 );
+if ( getenv( 'DEBUG_MODE' ) ) {
+	$wgShowExceptionDetails = true;
+	$wgDebugToolbar = true;
+	$wgDevelopmentWarnings = true;
+}
 
 # -- Language ------------------------------------------------------------------
 $wgULSLanguages = [ 'fr', 'br' ];
@@ -188,57 +190,42 @@ wfLoadExtension( 'AEPedia' );
 # -- Translate -----------------------------------------------------------------
 $wgTranslateDocumentationLanguageCode = 'qqq';
 $wgTranslatePageTranslationULS = true;
-$wgGroupPermissions['user']['translate'] = true;
-$wgGroupPermissions['user']['skipcaptcha'] = true;
+$wgGroupPermissions['user']['translate']       = true;
+$wgGroupPermissions['user']['skipcaptcha']     = true;
 $wgGroupPermissions['user']['pagetranslation'] = true;
 
 # -- Custom namespaces ---------------------------------------------------------
 # One namespace per group. Use even numbers >= 3000 for custom namespaces.
 # The odd number (e.g. 3001) is automatically the Talk namespace.
-define( 'NS_HR',          3000 );
-define( 'NS_HR_TALK',     3001 );
-define( 'NS_ACCOUNTING',  3002 );
-define( 'NS_ACCOUNTING_TALK', 3003 );
-define( 'NS_DIRECTION',   3004 );
-define( 'NS_DIRECTION_TALK', 3005 );
+define( 'NS_NAONED',      3000 );
+define( 'NS_NAONED_TALK', 3001 );
+define( 'NS_ORVEZ',       3002 );
+define( 'NS_ORVEZ_TALK',  3003 );
 
-$wgExtraNamespaces[NS_HR]              = 'HR';
-$wgExtraNamespaces[NS_HR_TALK]         = 'HR_Talk';
-$wgExtraNamespaces[NS_ACCOUNTING]      = 'Accounting';
-$wgExtraNamespaces[NS_ACCOUNTING_TALK] = 'Accounting_Talk';
-$wgExtraNamespaces[NS_DIRECTION]       = 'Direction';
-$wgExtraNamespaces[NS_DIRECTION_TALK]  = 'Direction_Talk';
+$wgExtraNamespaces[NS_NAONED]      = 'Naoned';
+$wgExtraNamespaces[NS_NAONED_TALK] = 'Naoned_Talk';
+$wgExtraNamespaces[NS_ORVEZ]       = 'Orvez';
+$wgExtraNamespaces[NS_ORVEZ_TALK]  = 'Orvez_Talk';
 
 # -- Lockdown: restrict namespaces to their respective groups ------------------
 # Only members of the group (+ sysops) can read/edit pages in these namespaces.
 
-$wgNamespacePermissionLockdown[NS_HR]['read']         = [ 'aep_rh', 'sysop' ];
-$wgNamespacePermissionLockdown[NS_HR]['edit']         = [ 'aep_rh', 'sysop' ];
-$wgNamespacePermissionLockdown[NS_HR_TALK]['read']    = [ 'aep_rh', 'sysop' ];
-$wgNamespacePermissionLockdown[NS_HR_TALK]['edit']    = [ 'aep_rh', 'sysop' ];
-
-$wgNamespacePermissionLockdown[NS_ACCOUNTING]['read']         = [ 'aep_tresorerie', 'sysop' ];
-$wgNamespacePermissionLockdown[NS_ACCOUNTING]['edit']         = [ 'aep_tresorerie', 'sysop' ];
-$wgNamespacePermissionLockdown[NS_ACCOUNTING_TALK]['read']    = [ 'aep_tresorerie', 'sysop' ];
-$wgNamespacePermissionLockdown[NS_ACCOUNTING_TALK]['edit']    = [ 'aep_tresorerie', 'sysop' ];
-
-$wgNamespacePermissionLockdown[NS_DIRECTION]['read']         = [ 'aep_ca', 'sysop' ];
-$wgNamespacePermissionLockdown[NS_DIRECTION]['edit']         = [ 'aep_ca', 'sysop' ];
-$wgNamespacePermissionLockdown[NS_DIRECTION_TALK]['read']    = [ 'aep_ca', 'sysop' ];
-$wgNamespacePermissionLockdown[NS_DIRECTION_TALK]['edit']    = [ 'aep_ca', 'sysop' ];
+$wgNamespacePermissionLockdown[NS_NAONED]['read']      = [ 'skol_naoned', 'sysop' ];
+$wgNamespacePermissionLockdown[NS_NAONED]['edit']      = [ 'skol_naoned', 'sysop' ];
+$wgNamespacePermissionLockdown[NS_NAONED_TALK]['read'] = [ 'skol_orvez', 'sysop' ];
+$wgNamespacePermissionLockdown[NS_NAONED_TALK]['edit'] = [ 'skol_orvez', 'sysop' ];
 
 # -- General permissions -------------------------------------------------------
 # Anonymous users cannot read anything (school wiki = logged-in only)
-$wgGroupPermissions['*']['read']           = false;
-$wgGroupPermissions['*']['edit']           = false;
-$wgGroupPermissions['*']['createaccount']  = true;  # Must stay true so registration works
+$wgGroupPermissions['*']['read']          = false;
+$wgGroupPermissions['*']['edit']          = false;
+$wgGroupPermissions['*']['createaccount'] = true;  # Must stay true so registration works
 
 # Logged-in users can read and edit public pages
-$wgGroupPermissions['user']['read']  = true;
-$wgGroupPermissions['user']['edit']  = true;
+$wgGroupPermissions['user']['read'] = true;
+$wgGroupPermissions['user']['edit'] = true;
 
 # Custom groups (must exist for Lockdown to reference them)
-$wgGroupPermissions['aep_rh']         = [];
-$wgGroupPermissions['aep_tresorerie']  = [];
-$wgGroupPermissions['aep_ca']          = [];
-
+$wgGroupPermissions['skol_naoned'] = [];
+$wgGroupPermissions['skol_orvez']  = [];
+$wgGroupPermissions['admin_skol']  = [];
