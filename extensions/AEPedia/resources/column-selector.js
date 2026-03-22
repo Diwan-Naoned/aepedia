@@ -13,8 +13,8 @@
  * mw.config values set by PHP:
  *   - aepedia.columnNumberedLabel  translated "Column $1" string
  *   - aepedia.noEmailsError        translated error when no emails found
- *   - aepedia.confirmAllowlist     confirmation message for allowlist import
  *   - aepedia.confirmGroups        confirmation message for group import
+ *   - aepedia.fileNoneLabel        "no file chosen" placeholder text
  */
 
 const COLUMN_NUMBERED_LABEL =
@@ -23,6 +23,8 @@ const NO_EMAILS_ERROR =
   mw.config.get("aepedia.noEmailsError") ?? "No valid emails found.";
 const FILTER_VALUE_PLACEHOLDER =
   mw.config.get("aepedia.filterValuePlaceholder") ?? "Value to exclude";
+const FILE_NONE_LABEL =
+  mw.config.get("aepedia.fileNoneLabel") ?? "No file chosen";
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // -------------------------------------------------------------------------
@@ -30,11 +32,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // -------------------------------------------------------------------------
 
 mw.hook("wikipage.content").add(() => {
-  registerForm(
-    "aepedia-form-allowlist",
-    mw.config.get("aepedia.confirmAllowlist"),
-  );
-  registerForm("aepedia-form-groups", mw.config.get("aepedia.confirmGroups"));
+  registerForm("aepedia-form", mw.config.get("aepedia.confirmGroups"));
   registerDownloadButtons();
 });
 
@@ -50,12 +48,16 @@ const registerForm = (formId, confirmMsg) => {
   if (!form) return;
 
   const fileInput = form.elements["csv_file"];
+  const fileBtn = form.querySelector(".aepedia-file-trigger .cdx-button");
+  const fileNameSpan = form.querySelector(".aepedia-file-name");
   const colSelect = form.elements["csv_cols"];
   const emailsField = form.elements["emails"];
   const csvOptions = form.querySelector(".aepedia-csv-options");
   const filterList = form.querySelector(".aepedia-filter-list");
   const filterAddBtn = form.querySelector(".aepedia-filter-add");
   if (!fileInput || !colSelect || !emailsField || !csvOptions) return;
+
+  fileBtn?.addEventListener("click", () => fileInput.click());
 
   /** Current column labels, kept in sync with headers. */
   let currentCols = null;
@@ -66,6 +68,9 @@ const registerForm = (formId, confirmMsg) => {
 
   fileInput.addEventListener("change", async () => {
     const file = fileInput.files?.[0];
+    if (fileNameSpan) {
+      fileNameSpan.textContent = file ? file.name : FILE_NONE_LABEL;
+    }
     if (!file) {
       resetSelect(colSelect);
       clearFilters(filterList);
@@ -392,7 +397,7 @@ const registerDownloadButtons = () => {
   for (const link of document.querySelectorAll(".aepedia-csv-download")) {
     link.addEventListener("click", (e) => {
       e.preventDefault();
-      const table = link.closest("h3")?.nextElementSibling;
+      const table = link.closest("summary")?.nextElementSibling;
       if (!table) return;
 
       const rows = Array.from(table.querySelectorAll("tbody tr"), (tr) =>

@@ -1,21 +1,27 @@
-/* Tabs */
-.aepedia-tabs {
-  margin-bottom: 1em;
-}
-
-.aepedia-tabs a {
-  margin-right: 1.5em;
-}
-
-.aepedia-tabs a.active {
-  font-weight: bold;
-  border-bottom: 2px solid #3366cc;
-  padding-bottom: 4px;
-}
-
 /* Forms */
 .aepedia-form textarea[name="emails"] {
   display: none;
+}
+
+/* File input */
+.aepedia-file-input {
+  display: none;
+}
+
+.aepedia-file-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+}
+
+.aepedia-file-name {
+  color: #54595d;
+  font-style: italic;
+}
+
+.aepedia-csv-required {
+  display: flex;
+  gap: 32px;
 }
 
 .aepedia-csv-options {
@@ -49,6 +55,11 @@
 
 .aepedia-table {
   width: 100%;
+}
+
+summary>h3 {
+  display: inline-block;
+  margin-left: 8px !important;
 }
 
 /* Flash messages */

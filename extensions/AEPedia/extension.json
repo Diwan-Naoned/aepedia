@@ -24,7 +24,9 @@
       "class": "MediaWiki\\ResourceLoader\\CodexModule",
       "codexStyleOnly": true,
       "codexComponents": [
-        "CdxButton"
+        "CdxButton",
+        "CdxMessage",
+        "CdxSelect"
       ],
       "scripts": [
         "resources/column-selector.js"
@@ -48,7 +50,6 @@
     "AEPediaAdmin": {
       "class": "MediaWiki\\Extension\\AEPedia\\SpecialAEPediaAdmin",
       "services": [
-        "AEPedia.AllowlistManager",
         "AEPedia.GroupManager"
       ]
     }
@@ -61,6 +62,9 @@
       "aepedia-admin": false
     },
     "sysop": {
+      "aepedia-admin": true
+    },
+    "admin_skol": {
       "aepedia-admin": true
     }
   },

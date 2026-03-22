@@ -10,8 +10,8 @@ class UserHooks {
     /**
      * Fired right after a new local user account is created.
      *
-     * 1. If the email is not in the allowlist → block the account.
-     * 2. If the email is allowlisted → apply any pre-existing group assignments.
+     * 1. If the email is not in any school group → block the account.
+     * 2. If the email belongs to a school group → apply pre-existing group assignments.
      */
     public static function onLocalUserCreated( User $user, bool $autocreated ): void {
         $email = strtolower( trim( $user->getEmail() ) );
@@ -25,17 +25,16 @@ class UserHooks {
             return;
         }
 
-        $services      = MediaWikiServices::getInstance();
-        $allowlistMgr  = $services->getService( 'AEPedia.AllowlistManager' );
+        $groupManager = MediaWikiServices::getInstance()->getService( 'AEPedia.GroupManager' );
 
-        if ( !$allowlistMgr->isAllowed( $email ) ) {
-            self::blockUser( $user, 'Your email address is not authorized to create an account on this wiki.' );
+        if ( !$groupManager->isAllowed( $email ) ) {
+            self::blockUser( $user, 'Your email address is not registered in any school group on this wiki.' );
             return;
         }
 
         // Email is valid — apply any group assignments that were already in the DB
         // (e.g. admin imported the groups CSV before this user registered)
-        $services->getService( 'AEPedia.GroupManager' )->applyGroupsToNewUser( $user );
+        $groupManager->applyGroupsToNewUser( $user );
     }
 
     /**
