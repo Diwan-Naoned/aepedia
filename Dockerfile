@@ -11,7 +11,7 @@ RUN curl -fSL https://extdist.wmflabs.org/dist/extensions/Lockdown-REL1_45-b29af
     | tar -xz -C /var/www/html/extensions/
 
 # Install UniversalLanguageSelector
-RUN curl -fSL https://extdist.wmflabs.org/dist/extensions/UniversalLanguageSelector-REL1_45-52177c5.tar.gz \
+RUN curl -fSL https://extdist.wmflabs.org/dist/extensions/UniversalLanguageSelector-REL1_45-64163f1.tar.gz \
     | tar -xz -C /var/www/html/extensions/
 
 # Install Translate
