@@ -221,6 +221,8 @@ $wgNamespacePermissionLockdown[NS_NAONED_TALK]['edit'] = [ 'skol_orvez', 'sysop'
 $wgGroupPermissions['*']['read']          = false;
 $wgGroupPermissions['*']['edit']          = false;
 $wgGroupPermissions['*']['createaccount'] = true;  # Must stay true so registration works
+# Since anonymous users can't read any pages, we need to also whitelist the account creation page.
+$wgWhitelistRead = ['Spécial:Créer un compte' ];   
 
 # Logged-in users can read and edit public pages
 $wgGroupPermissions['user']['read'] = true;
