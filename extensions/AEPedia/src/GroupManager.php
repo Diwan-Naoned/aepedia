@@ -33,6 +33,7 @@ class GroupManager {
     public const MANAGED_GROUPS = [
         'skol_naoned',
         'skol_orvez',
+        'diwan_external'
     ];
 
     /**
@@ -40,8 +41,9 @@ class GroupManager {
      * Used in the admin UI instead of raw group identifiers.
      */
     public const GROUP_LABELS = [
-        'skol_naoned' => [ 'fr' => 'Nantes',    'br' => 'Naoned' ],
-        'skol_orvez'  => [ 'fr' => 'Orvault',   'br' => 'Orvez'  ],
+        'skol_naoned' => [ 'fr' => 'Nantes',  'br' => 'Naoned' ],
+        'skol_orvez'  => [ 'fr' => 'Orvault', 'br' => 'Orvez'  ],
+        'skol_all'    => [ 'fr' => 'Autre',   'br' => 'All']
     ];
 
     /** Exact block reason set by group imports. Used to identify blocks we can safely remove. */

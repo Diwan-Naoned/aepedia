@@ -229,4 +229,5 @@ $wgGroupPermissions['user']['edit'] = true;
 # Custom groups (must exist for Lockdown to reference them)
 $wgGroupPermissions['skol_naoned'] = [];
 $wgGroupPermissions['skol_orvez']  = [];
+$wgGroupPermissions['skol_all']    = [];
 $wgGroupPermissions['admin_skol']  = [];
