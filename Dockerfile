@@ -6,25 +6,8 @@ RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" &&
     php composer-setup.php && \
     php -r "unlink('composer-setup.php');"
 
-# Install Lockdown - update URL here to upgrade
-RUN curl -fSL https://extdist.wmflabs.org/dist/extensions/Lockdown-REL1_45-b29af0e.tar.gz \
-    | tar -xz -C /var/www/html/extensions/
-
-# Install UniversalLanguageSelector
-RUN curl -fSL https://extdist.wmflabs.org/dist/extensions/UniversalLanguageSelector-REL1_45-64163f1.tar.gz \
-    | tar -xz -C /var/www/html/extensions/
-
-# Install Translate
-RUN curl -fSL https://extdist.wmflabs.org/dist/extensions/Translate-REL1_45-5d90b09.tar.gz \
-    | tar -xz -C /var/www/html/extensions/
-
-# Install TranslationNotifications and its dependencies
-RUN curl -fSL https://extdist.wmflabs.org/dist/extensions/MassMessage-REL1_45-c581968.tar.gz \
-    | tar -xz -C /var/www/html/extensions/
-RUN curl -fSL https://extdist.wmflabs.org/dist/extensions/MassMessageEmail-REL1_45-9df7517.tar.gz \
-    | tar -xz -C /var/www/html/extensions/
-RUN curl -fSL https://extdist.wmflabs.org/dist/extensions/TranslationNotifications-REL1_45-17889f7.tar.gz \
-    | tar -xz -C /var/www/html/extensions/
+# Install external extensions manually downloded from https://extdist.wmflabs.org/dist/extensions/
+ADD extensions/*.tar.gz /var/www/html/extensions/
 
 RUN cat <<'EOF' > ./composer.local.json
 {
