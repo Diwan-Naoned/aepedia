@@ -2,8 +2,6 @@
 
 namespace MediaWiki\Extension\AEPedia;
 
-use MediaWiki\Block\BlockUserFactory;
-use MediaWiki\Block\UnblockUserFactory;
 use MediaWiki\User\User;
 use MediaWiki\User\UserFactory;
 use MediaWiki\User\UserGroupManager;
@@ -16,12 +14,13 @@ use Wikimedia\Rdbms\IConnectionProvider;
  * that:
  *   1. Writes to aepedia_groups (the DB table, source of truth for pre-registration assignments)
  *   2. Immediately applies MW user groups to existing accounts
- *   3. Blocks accounts that are removed from all school groups
- *   4. Unblocks accounts that are re-added to any school group
+ *
+ * Read/edit access is controlled by $wgGroupPermissions — users not in any
+ * school group simply have no read/edit rights. No blocking is needed.
  *
  * Called by:
  *   - SpecialAEPediaAdmin (on CSV import)
- *   - UserHooks (on new account creation, to check eligibility and apply pre-existing assignments)
+ *   - UserHooks (on new account creation, to apply pre-existing assignments)
  *   - UserHooks (on UserGroupsChanged, to keep aepedia_groups in sync with MW group assignments)
  */
 class GroupManager {
@@ -33,7 +32,7 @@ class GroupManager {
     public const MANAGED_GROUPS = [
         'skol_naoned',
         'skol_orvez',
-        'diwan_external'
+        'skol_all'
     ];
 
     /**
@@ -46,46 +45,18 @@ class GroupManager {
         'skol_all'    => [ 'fr' => 'Autre',   'br' => 'All']
     ];
 
-    /** Exact block reason set by group imports. Used to identify blocks we can safely remove. */
-    private const BLOCK_REASON = 'Email address removed from all AEPedia school groups.';
-
     private IConnectionProvider $dbProvider;
     private UserGroupManager $userGroupManager;
     private UserFactory $userFactory;
-    private BlockUserFactory $blockUserFactory;
-    private UnblockUserFactory $unblockUserFactory;
 
     public function __construct(
         IConnectionProvider $dbProvider,
         UserGroupManager $userGroupManager,
-        UserFactory $userFactory,
-        BlockUserFactory $blockUserFactory,
-        UnblockUserFactory $unblockUserFactory
+        UserFactory $userFactory
     ) {
-        $this->dbProvider         = $dbProvider;
-        $this->userGroupManager   = $userGroupManager;
-        $this->userFactory        = $userFactory;
-        $this->blockUserFactory   = $blockUserFactory;
-        $this->unblockUserFactory = $unblockUserFactory;
-    }
-
-    /**
-     * Check whether an email is eligible to register.
-     * A user is allowed if their email appears in at least one managed school group.
-     *
-     * Used by UserHooks at account creation time.
-     */
-    public function isAllowed( string $email ): bool {
-        return (bool)$this->dbProvider->getPrimaryDatabase()
-            ->newSelectQueryBuilder()
-            ->select( 'ag_email' )
-            ->from( 'aepedia_groups' )
-            ->where( [
-                'ag_email' => strtolower( trim( $email ) ),
-                'ag_group' => self::MANAGED_GROUPS,
-            ] )
-            ->caller( __METHOD__ )
-            ->fetchField();
+        $this->dbProvider       = $dbProvider;
+        $this->userGroupManager = $userGroupManager;
+        $this->userFactory      = $userFactory;
     }
 
     /**
@@ -108,18 +79,19 @@ class GroupManager {
     /**
      * Fully replace the members of a single group with the provided email list.
      *
-     * - Emails no longer in the list have the group removed from their MW account.
-     *   If they no longer belong to any managed school group, their account is blocked.
-     * - New emails have the group added to their MW account (if they have one).
-     *   If they were previously blocked with our block reason, they are unblocked.
+     * - Emails no longer in the list have the MW group removed from their account.
+     * - New emails have the MW group added to their account (if they have one).
+     *
+     * Read/edit access is governed by $wgGroupPermissions on each school group,
+     * so removing a user from all school groups effectively locks them out.
      *
      * @param string   $group     One of MANAGED_GROUPS.
      * @param string[] $newEmails The complete new member list for this group.
-     * @return array{added: int, removed: int, blocked: int, unblocked: int}
+     * @return array{added: int, removed: int}
      */
     public function replaceGroupMembers( string $group, array $newEmails ): array {
         if ( !in_array( $group, self::MANAGED_GROUPS, true ) ) {
-            return [ 'added' => 0, 'removed' => 0, 'blocked' => 0, 'unblocked' => 0 ];
+            return [ 'added' => 0, 'removed' => 0 ];
         }
 
         $db        = $this->dbProvider->getPrimaryDatabase();
@@ -170,54 +142,9 @@ class GroupManager {
             $this->userGroupManager->removeUserFromGroup( $user, $group );
         }
 
-        // Block accounts removed from their last school group; unblock re-added ones.
-        $blocked   = 0;
-        $unblocked = 0;
-
-        foreach ( $this->findUsersByEmails( $toRemove ) as $user ) {
-            if ( $this->isAllowed( $user->getEmail() ) ) {
-                // Still in at least one other school group — do not block.
-                continue;
-            }
-            // Skip users that are already blocked — don't overwrite an admin's block.
-            if ( $user->getBlock() !== null ) {
-                continue;
-            }
-            $this->blockUserFactory
-                ->newBlockUser(
-                    $user,
-                    $this->getSystemUser(),
-                    'infinity',
-                    self::BLOCK_REASON,
-                    [
-                        'isCreateAccountBlocked' => true,
-                        'isEmailBlocked'         => false,
-                        'isHardBlock'            => true,
-                        'isAutoblocking'         => false,
-                    ]
-                )->placeBlock();
-            $blocked++;
-        }
-
-        foreach ( $this->findUsersByEmails( $toAdd ) as $user ) {
-            $block = $user->getBlock();
-            if ( $block === null ) {
-                continue;
-            }
-            if ( $block->getReasonComment()->text !== self::BLOCK_REASON ) {
-                continue;
-            }
-            $this->unblockUserFactory
-                ->newUnblockUser( $user, $this->getSystemUser(), 'Email address re-added to an AEPedia school group.' )
-                ->unblock();
-            $unblocked++;
-        }
-
         return [
-            'added'     => count( $toAdd ),
-            'removed'   => count( $toRemove ),
-            'blocked'   => $blocked,
-            'unblocked' => $unblocked,
+            'added'   => count( $toAdd ),
+            'removed' => count( $toRemove ),
         ];
     }
 
@@ -313,9 +240,5 @@ class GroupManager {
             $users[] = $this->userFactory->newFromId( (int)$row->user_id );
         }
         return $users;
-    }
-
-    private function getSystemUser(): User {
-        return User::newSystemUser( 'MediaWiki default', [ 'steal' => true ] );
     }
 }

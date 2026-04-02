@@ -15,7 +15,7 @@
   "aepedia-groups-members-title": "$1 ($2 izili)",
   "aepedia-groups-no-members": "Izili ebet.",
   "aepedia-groups-col-email": "Email",
-  "aepedia-groups-success": "Strollad <strong>$1</strong> hizivaet : $2 izili ouzhpennet, $3 izili tennet. $4 kont(où) staolet, $5 kont(où) distaolet.",
+  "aepedia-groups-success": "Strollad <strong>$1</strong> hizivaet : $2 izili ouzhpennet, $3 izili tennet.",
   "aepedia-groups-error-invalid": "Strollad direizh.",
   "aepedia-groups-error-empty": "N'eus ket bet kavet emailoù reizh el CSV.",
   "aepedia-csv-columns-label": "Kolofn(où) email :",

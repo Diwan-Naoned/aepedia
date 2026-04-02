@@ -15,7 +15,7 @@
   "aepedia-groups-members-title": "$1 ($2 members)",
   "aepedia-groups-no-members": "No members.",
   "aepedia-groups-col-email": "Email",
-  "aepedia-groups-success": "Group <strong>$1</strong> updated: $2 member(s) added, $3 member(s) removed. $4 account(s) blocked, $5 account(s) unblocked.",
+  "aepedia-groups-success": "Group <strong>$1</strong> updated: $2 member(s) added, $3 member(s) removed.",
   "aepedia-groups-error-invalid": "Invalid group.",
   "aepedia-groups-error-empty": "No valid email addresses found in the CSV.",
   "aepedia-csv-columns-label": "Email column(s):",

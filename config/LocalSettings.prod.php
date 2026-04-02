@@ -51,6 +51,7 @@ $wgPasswordSender = getenv( 'CONTACT_EMAIL' ) ?: "aep.naoned@gmail.com";
 $wgEnotifUserTalk = true; # UPO
 $wgEnotifWatchlist = true; # UPO
 $wgEmailAuthentication = true;
+$wgEmailConfirmToEdit = true;
 
 $wgSMTP = [
     'host'      => 'in-v3.mailjet.com', // could also be an IP address. Where the SMTP server is located. If using SSL or TLS, add the prefix "ssl://" or "tls://".
@@ -213,8 +214,8 @@ $wgExtraNamespaces[NS_ORVEZ_TALK]  = 'Orvez_Talk';
 
 $wgNamespacePermissionLockdown[NS_NAONED]['read']      = [ 'skol_naoned', 'sysop' ];
 $wgNamespacePermissionLockdown[NS_NAONED]['edit']      = [ 'skol_naoned', 'sysop' ];
-$wgNamespacePermissionLockdown[NS_NAONED_TALK]['read'] = [ 'skol_orvez', 'sysop' ];
-$wgNamespacePermissionLockdown[NS_NAONED_TALK]['edit'] = [ 'skol_orvez', 'sysop' ];
+$wgNamespacePermissionLockdown[NS_NAONED_TALK]['read'] = [ 'skol_naoned', 'sysop' ];
+$wgNamespacePermissionLockdown[NS_NAONED_TALK]['edit'] = [ 'skol_naoned', 'sysop' ];
 
 # -- General permissions -------------------------------------------------------
 # Anonymous users cannot read anything (school wiki = logged-in only)
@@ -224,12 +225,18 @@ $wgGroupPermissions['*']['createaccount'] = true;  # Must stay true so registrat
 # Since anonymous users can't read any pages, we need to also whitelist the account creation page.
 $wgWhitelistRead = ['Spécial:Créer un compte' ];   
 
-# Logged-in users can read and edit public pages
-$wgGroupPermissions['user']['read'] = true;
-$wgGroupPermissions['user']['edit'] = true;
+# Logged-in users do NOT get read/edit by default.
+# Only users in a school group (or sysop) can read and edit.
+# This ensures users whose email is not in any school group are locked out entirely.
+$wgGroupPermissions['user']['read'] = false;
+$wgGroupPermissions['user']['edit'] = false;
 
-# Custom groups (must exist for Lockdown to reference them)
-$wgGroupPermissions['skol_naoned'] = [];
-$wgGroupPermissions['skol_orvez']  = [];
-$wgGroupPermissions['skol_all']    = [];
-$wgGroupPermissions['admin_skol']  = [];
+# Custom groups — read/edit granted per school group
+$wgGroupPermissions['skol_naoned']['read']      = true;
+$wgGroupPermissions['skol_naoned']['edit']      = true;
+$wgGroupPermissions['skol_orvez']['read']       = true;
+$wgGroupPermissions['skol_orvez']['edit']       = true;
+$wgGroupPermissions['skol_all']['read']         = true;
+$wgGroupPermissions['skol_all']['edit']         = true;
+$wgGroupPermissions['admin_skol']['read']       = true;
+$wgGroupPermissions['admin_skol']['edit']       = true;

@@ -82,9 +82,7 @@ class SpecialAEPediaAdmin extends SpecialPage {
                 $this->msg( 'aepedia-groups-success',
                     $this->getGroupDisplayName( $group ),
                     $result['added'],
-                    $result['removed'],
-                    $result['blocked'],
-                    $result['unblocked']
+                    $result['removed']
                 )
             ) );
         }

@@ -8,9 +8,7 @@ return [
         return new GroupManager(
             $services->getConnectionProvider(),
             $services->getUserGroupManager(),
-            $services->getUserFactory(),
-            $services->getBlockUserFactory(),
-            $services->getUnblockUserFactory()
+            $services->getUserFactory()
         );
     },
 ];
