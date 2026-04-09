@@ -217,6 +217,17 @@ $wgNamespacePermissionLockdown[NS_NAONED]['edit']      = [ 'skol_naoned', 'sysop
 $wgNamespacePermissionLockdown[NS_NAONED_TALK]['read'] = [ 'skol_naoned', 'sysop' ];
 $wgNamespacePermissionLockdown[NS_NAONED_TALK]['edit'] = [ 'skol_naoned', 'sysop' ];
 
+# -- Visual Editor: enable for custom namespaces ------------------------------
+$wgContentNamespaces[] = NS_NAONED;
+$wgContentNamespaces[] = NS_NAONED_TALK;
+$wgContentNamespaces[] = NS_ORVEZ;
+$wgContentNamespaces[] = NS_ORVEZ_TALK;
+
+# -- Visual Editor: group permissions -----------------------------------------
+$wgGroupPermissions['skol_naoned']['editvisualeditor'] = true;
+$wgGroupPermissions['skol_orvez']['editvisualeditor'] = true;
+$wgGroupPermissions['skol_all']['editvisualeditor'] = true;
+
 # -- General permissions -------------------------------------------------------
 # Anonymous users cannot read anything (school wiki = logged-in only)
 $wgGroupPermissions['*']['read']          = false;
