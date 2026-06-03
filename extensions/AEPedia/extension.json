@@ -54,6 +54,14 @@
       ]
     }
   },
+  "AuthManagerAutoConfig": {
+    "preauth": {
+      "AEPediaEmailAllowlistPreAuthenticationProvider": {
+        "class": "MediaWiki\\Extension\\AEPedia\\Auth\\EmailAllowlistPreAuthenticationProvider",
+        "sort": 0
+      }
+    }
+  },
   "AvailableRights": [
     "aepedia-admin"
   ],

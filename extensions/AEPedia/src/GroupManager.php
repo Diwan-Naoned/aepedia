@@ -60,6 +60,25 @@ class GroupManager {
     }
 
     /**
+     * Whether the given email has any pre-existing group assignment.
+     * Used by the pre-registration check to reject non-allowlisted signups
+     * before any account or verification email is created.
+     */
+    public function isEmailAllowed( string $email ): bool {
+        $email = strtolower( trim( $email ) );
+        if ( $email === '' ) {
+            return false;
+        }
+        return (bool)$this->dbProvider->getReplicaDatabase()
+            ->newSelectQueryBuilder()
+            ->select( '1' )
+            ->from( 'aepedia_groups' )
+            ->where( [ 'ag_email' => $email ] )
+            ->caller( __METHOD__ )
+            ->fetchField();
+    }
+
+    /**
      * Return all emails currently assigned to a group, sorted alphabetically.
      * Used by the admin UI for display.
      *

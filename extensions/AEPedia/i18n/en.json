@@ -29,5 +29,6 @@
   "aepedia-csv-filter-hint": "Rows matching any filter will be excluded from the import.",
   "aepedia-csv-filter-add": "Add filter",
   "aepedia-csv-filter-value-placeholder": "Value to exclude",
-  "aepedia-csv-download": "Download CSV"
+  "aepedia-csv-download": "Download CSV",
+  "aepedia-signup-not-allowed": "Account creation is restricted. If you believe you should have access, please contact your school administrator."
 }

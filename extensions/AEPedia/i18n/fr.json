@@ -29,5 +29,6 @@
   "aepedia-csv-filter-hint": "Les lignes correspondant à un filtre seront exclues de l'import.",
   "aepedia-csv-filter-add": "Ajouter un filtre",
   "aepedia-csv-filter-value-placeholder": "Valeur à exclure",
-  "aepedia-csv-download": "Télécharger CSV"
+  "aepedia-csv-download": "Télécharger CSV",
+  "aepedia-signup-not-allowed": "La création de compte est restreinte. Si vous pensez devoir y avoir accès, contactez l'administrateur de votre école."
 }
