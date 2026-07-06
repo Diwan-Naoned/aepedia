@@ -1,0 +1,7 @@
+{
+  "name": "aepedia",
+  "private": true,
+  "scripts": {
+    "test": "node --test resources/*.test.js"
+  }
+}

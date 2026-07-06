@@ -234,7 +234,7 @@ $wgGroupPermissions['*']['read']          = false;
 $wgGroupPermissions['*']['edit']          = false;
 $wgGroupPermissions['*']['createaccount'] = true;  # Must stay true so registration works
 # Since anonymous users can't read any pages, we need to also whitelist the account creation page.
-$wgWhitelistRead = ['Spécial:Créer un compte' ];   
+$wgWhitelistRead = ['Spécial:Créer un compte' ];
 
 # Logged-in users do NOT get read/edit by default.
 # Only users in a school group (or sysop) can read and edit.

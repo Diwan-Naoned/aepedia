@@ -17,24 +17,28 @@
  *   - aepedia.fileNoneLabel        "no file chosen" placeholder text
  */
 
-const COLUMN_NUMBERED_LABEL =
-  mw.config.get("aepedia.columnNumberedLabel") ?? "Column $1";
-const NO_EMAILS_ERROR =
-  mw.config.get("aepedia.noEmailsError") ?? "No valid emails found.";
-const FILTER_VALUE_PLACEHOLDER =
-  mw.config.get("aepedia.filterValuePlaceholder") ?? "Value to exclude";
-const FILE_NONE_LABEL =
-  mw.config.get("aepedia.fileNoneLabel") ?? "No file chosen";
+// `mw` is absent under Node (unit tests); fall back to defaults there.
+const mwConfig = (key, fallback) =>
+  typeof mw !== "undefined" && mw.config
+    ? (mw.config.get(key) ?? fallback)
+    : fallback;
+
+const COLUMN_NUMBERED_LABEL = mwConfig("aepedia.columnNumberedLabel", "Column $1");
+const NO_EMAILS_ERROR = mwConfig("aepedia.noEmailsError", "No valid emails found.");
+const FILTER_VALUE_PLACEHOLDER = mwConfig("aepedia.filterValuePlaceholder", "Value to exclude");
+const FILE_NONE_LABEL = mwConfig("aepedia.fileNoneLabel", "No file chosen");
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // -------------------------------------------------------------------------
 // Initialisation — wire up event listeners once the DOM is ready
 // -------------------------------------------------------------------------
 
-mw.hook("wikipage.content").add(() => {
-  registerForm("aepedia-form", mw.config.get("aepedia.confirmGroups"));
-  registerDownloadButtons();
-});
+if (typeof mw !== "undefined") {
+  mw.hook("wikipage.content").add(() => {
+    registerForm("aepedia-form", mw.config.get("aepedia.confirmGroups"));
+    registerDownloadButtons();
+  });
+}
 
 /**
  * Wire up file input and form submit listeners for one form.
@@ -253,7 +257,6 @@ const extractEmails = (text, colIndexes, filters = []) => {
       if (EMAIL_RE.test(email) && !seen.has(email)) {
         seen.add(email);
         emails.push(email);
-        break;
       }
     }
   }
@@ -415,3 +418,9 @@ const registerDownloadButtons = () => {
     });
   }
 };
+
+// Expose pure helpers for Node-based unit tests. Ignored by MediaWiki
+// ResourceLoader, which has no `module` global.
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = { parseCsvLine, findHeaders, extractEmails };
+}
