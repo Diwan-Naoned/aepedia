@@ -243,6 +243,8 @@ $wgGroupPermissions['user']['read'] = false;
 $wgGroupPermissions['user']['edit'] = false;
 
 # Custom groups — read/edit granted per school group
+$wgGroupPermissions['sysop']['read']            = true;
+$wgGroupPermissions['sysop']['write']           = true;
 $wgGroupPermissions['skol_naoned']['read']      = true;
 $wgGroupPermissions['skol_naoned']['edit']      = true;
 $wgGroupPermissions['skol_orvez']['read']       = true;
